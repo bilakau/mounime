@@ -139,6 +139,11 @@ const ContextMenu = () => {
   }, []);
 
   if (isDevToolsOpen) {
+    const handleExit = () => {
+      // Refresh the page to reset the dev tools detection
+      window.location.reload();
+    };
+
     return (
       <div className="fixed inset-0 z-[1000] bg-black flex items-center justify-center p-8 overflow-hidden">
         <div className="max-w-2xl w-full bg-[#FF3B30] border-8 border-black p-10 shadow-[20px_20px_0px_0px_#FFCC00] transform -rotate-2 text-center">
@@ -150,10 +155,16 @@ const ContextMenu = () => {
               Developer tools detected. Please close them to continue browsing Kanatanime V3.
             </p>
           </div>
-          <div className="flex justify-center">
+          <div className="flex justify-center gap-4">
              <div className="animate-bounce bg-black text-[#FFCC00] px-6 py-2 border-4 border-white font-black oswald text-lg">
                SYSTEM LOCKED
              </div>
+             <button
+               onClick={handleExit}
+               className="bg-white text-black px-6 py-2 border-4 border-black font-black oswald text-lg hover:bg-gray-200 transition-colors"
+             >
+               EXIT
+             </button>
           </div>
         </div>
         {/* Background decorative elements */}
