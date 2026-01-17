@@ -1,6 +1,10 @@
 
 import { Anime, Episode } from './types';
 
+export const API_BASE_URL = '/api/sanka';
+export const ANIMEPLAY_API_BASE_URL = '/api/animeplay';
+export const STREAM_API_BASE_URL = '/api/ryzumi';
+
 export const MOCK_ANIME: Anime[] = [
   {
     id: 'shadow-nexus',

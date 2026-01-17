@@ -40,12 +40,21 @@ const BottomNav = () => {
       )
     },
     { 
-      name: 'Genre', 
-      path: '/genre', 
+      name: 'List', 
+      path: '/list', 
       icon: (
         <svg className="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
           <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.58 8.44L11.5 4.36L7.42 8.44l4.08 4.08l4.08-4.08zM11.5 4.36l-4.08 4.08l4.08 4.08l4.08-4.08l-4.08-4.08zM19.66 12.52l-4.08-4.08l-4.08 4.08l4.08 4.08l4.08-4.08zM11.5 12.52l-4.08-4.08l-4.08 4.08l4.08 4.08l4.08-4.08zM7.42 16.6l-4.08-4.08l4.08 4.08l4.08-4.08L7.42 16.6z"/>
           <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11.5 12.52v8M7.42 16.6h8"/>
+        </svg>
+      )
+    },
+    { 
+      name: 'Genre', 
+      path: '/genre', 
+      icon: (
+        <svg className="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+          <path stroke="currentColor" strokeLinecap="round" strokeWidth="2" d="M9 15.511L12 12l3 3.511M12 12V4m0 16a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z"/>
         </svg>
       )
     },
@@ -59,7 +68,7 @@ const BottomNav = () => {
       )
     },
     { 
-      name: 'List', 
+      name: 'Favs', 
       path: '/favorites', 
       icon: (
         <svg className="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">

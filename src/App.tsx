@@ -7,40 +7,43 @@ import { Anime } from './types';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import OngoingPage from './pages/OngoingPage';
+import MoviesPage from './pages/MoviesPage';
 import CompletePage from './pages/CompletePage';
 import SearchPage from './pages/SearchPage';
 import AnimeDetail from './pages/AnimeDetail';
 import WatchPage from './pages/WatchPage';
 import SchedulePage from './pages/SchedulePage';
+import TrendingPage from './pages/TrendingPage';
+import SeriesListPage from './pages/SeriesListPage';
 import BottomNav from './components/BottomNav';
 import GenrePage from './pages/GenrePage';
 import GenreDetailPage from './pages/GenreDetailPage';
 import NotFoundPage from './pages/NotFoundPage';
 import SocialMediaPopup from './components/SocialMediaPopup';
-import ContextMenu from './components/ContextMenu';
+// import ContextMenu from './components/ContextMenu';
 import FavoritesPage from './pages/FavoritesPage';
+import { API_BASE_URL, ANIMEPLAY_API_BASE_URL } from './constants';
+import { authenticatedFetch } from './utils/api';
 
 export default function App() {
-  const [animeList, setAnimeList] = useState<Anime[]>([]);
+  const [trendingList, setTrendingList] = useState<Anime[]>([]);
   const [movieList, setMovieList] = useState<Anime[]>([]);
+  const [completedList, setCompletedList] = useState<Anime[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const cleanTitle = (title?: string) => title ? title.split(' Subtitle Indonesia')[0].trim() : 'Unknown Title';
-  const cleanSlug = (slug?: string) => slug ? slug.split('-episode-')[0] : 'unknown';
 
   const mapApiData = (data: any[]): Anime[] => {
     if (!Array.isArray(data)) return [];
     return data.map((item: any) => ({
-      id: item.animeId || cleanSlug(item.slug),
-      title: cleanTitle(item.title),
-      thumbnail: item.poster || '',
-      banner: item.poster || '',
-      episode: item.episodes ? `EP ${item.episodes}` : 'ONA',
-      status: item.releaseDay ? 'ONGOING' : 'COMPLETED',
-      year: 2025,
-      rating: item.score ? parseFloat(item.score) : (8.0 + Math.random() * 1.5),
-      genre: ['Action'], // API doesn't provide genre in list
-      synopsis: `Release: ${item.latestReleaseDate || item.lastReleaseDate || 'Recently'}. Watch ${item.title} on Kanatanime V3.`,
+      id: item.id,
+      title: item.title,
+      thumbnail: item.image_url || '',
+      banner: item.image_url || '',
+      episode: item.latest_episode ? `EP ${item.latest_episode}` : '??',
+      status: 'ONGOING', // Defaulting for now
+      year: item.date_created ? new Date(item.date_created).getFullYear() : 2025,
+      rating: item.rating ? parseFloat(item.rating) : 0,
+      genre: ['Anime'], 
+      synopsis: `Watch ${item.title} on Kanatanime V3.`,
       likes: `${Math.floor(Math.random() * 50) + 1}K`
     }));
   };
@@ -49,19 +52,23 @@ export default function App() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const res = await fetch('https://www.sankavollerei.com/anime/home');
+        const res = await authenticatedFetch(`${ANIMEPLAY_API_BASE_URL}/home`);
         const json = await res.json();
 
         if (json.status === 'success' && json.data) {
-          const ongoing = mapApiData(json.data.ongoing.animeList);
-          const completed = mapApiData(json.data.completed.animeList);
-          setAnimeList(ongoing);
-          setMovieList(completed); // Reusing movieList state for completed section
+          const trending = json.data.find((d: any) => d.type === 'all_trending')?.data || [];
+          const movies = json.data.find((d: any) => d.type === 'all_movies')?.data || [];
+          const completed = json.data.find((d: any) => d.type === 'all_completed')?.data || [];
+          
+          setTrendingList(mapApiData(trending));
+          setMovieList(mapApiData(movies));
+          setCompletedList(mapApiData(completed));
         }
       } catch (error) {
         console.error('Fetch Error:', error);
-        setAnimeList(MOCK_ANIME);
+        setTrendingList(MOCK_ANIME);
         setMovieList(MOCK_ANIME);
+        setCompletedList(MOCK_ANIME);
       } finally {
         setLoading(false);
       }
@@ -73,13 +80,23 @@ export default function App() {
   return (
     <div className="min-h-screen bg-transparent text-white selection:bg-[#FFCC00] selection:text-black overflow-x-hidden">
       <SocialMediaPopup />
-      <ContextMenu />
+      {/* <ContextMenu /> */}
       <Navbar />
       <main className="pt-28 pb-24 md:pb-20 lg:pb-20">
         <Routes>
-          <Route path="/" element={<Home animes={animeList} movies={movieList} loading={loading} />} />
+          <Route path="/" element={
+            <Home 
+              trending={trendingList} 
+              movies={movieList} 
+              completed={completedList} 
+              loading={loading} 
+            />
+          } />
           <Route path="/ongoing" element={<OngoingPage />} />
+          <Route path="/movies" element={<MoviesPage />} />
           <Route path="/complete" element={<CompletePage />} />
+          <Route path="/trending" element={<TrendingPage />} />
+          <Route path="/list" element={<SeriesListPage />} />
           <Route path="/schedule" element={<SchedulePage />} />
           <Route path="/genre" element={<GenrePage />} />
           <Route path="/genre/:genreId" element={<GenreDetailPage />} />

@@ -2,29 +2,28 @@ import React, { useEffect, useState } from 'react';
 import { Anime } from '../types';
 import Loader from '../components/Loader';
 import AnimeCard from '../components/AnimeCard';
+import { ANIMEPLAY_API_BASE_URL } from '../constants';
+import { authenticatedFetch } from '../utils/api';
 
 const OngoingPage = () => {
   const [ongoingList, setOngoingList] = useState<Anime[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const [hasNextPage, setHasNextPage] = useState(false);
-
-  const cleanTitle = (title?: string) => title ? title.split(' Subtitle Indonesia')[0].trim() : 'Unknown Title';
-  const cleanSlug = (slug?: string) => slug ? slug.split('-episode-')[0] : 'unknown';
+  const [hasNextPage, setHasNextPage] = useState(true);
 
   const mapApiData = (data: any[]): Anime[] => {
     if (!Array.isArray(data)) return [];
     return data.map((item: any) => ({
-      id: item.animeId || cleanSlug(item.slug),
-      title: cleanTitle(item.title),
-      thumbnail: item.poster || '',
-      banner: item.poster || '',
-      episode: item.episodes ? `EP ${item.episodes}` : 'ONA',
+      id: item.id,
+      title: item.title,
+      thumbnail: item.image_url || '',
+      banner: item.image_url || '',
+      episode: item.latest_episode ? `EP ${item.latest_episode}` : '??',
       status: 'ONGOING',
-      year: 2025,
-      rating: 8.0 + (Math.random() * 1.5),
-      genre: ['Action'],
-      synopsis: `Next release on ${item.releaseDay || 'soon'}.`,
+      year: item.release_date ? new Date(item.release_date).getFullYear() : 2026,
+      rating: item.rating ? parseFloat(item.rating) : 0,
+      genre: [item.type || 'Anime'],
+      synopsis: item.broadcast ? `Broadcast: ${item.broadcast}` : `Released: ${item.release_date ? new Date(item.release_date).toLocaleDateString() : 'Recently'}`,
       likes: `${Math.floor(Math.random() * 50) + 1}K`
     }));
   };
@@ -33,12 +32,13 @@ const OngoingPage = () => {
     const fetchOngoing = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`https://www.sankavollerei.com/anime/ongoing-anime?page=${page}`);
+        const res = await authenticatedFetch(`${ANIMEPLAY_API_BASE_URL}/ongoing?page=${page}`);
         const json = await res.json();
         
-        if (json.status === 'success' && json.data) {
-          setOngoingList(mapApiData(json.data.animeList));
-          setHasNextPage(json.data.pagination.hasNextPage);
+        if (json.status === 'success' && json.data?.data) {
+          const list = json.data.data;
+          setOngoingList(mapApiData(list));
+          setHasNextPage(list.length >= 10); // Simple heuristic for next page
         }
       } catch (error) {
         console.error('Fetch Error:', error);

@@ -41,11 +41,10 @@ const Navbar = () => {
         <div className="hidden lg:flex gap-1 items-center font-black uppercase oswald text-xl">
           {[
             { name: 'home', path: '/' },
+            { name: 'list', path: '/list' },
             { name: 'ongoing', path: '/ongoing' },
             { name: 'complete', path: '/complete' },
             { name: 'genre', path: '/genre' },
-            { name: 'schedule', path: '/schedule' },
-            { name: 'favorites', path: '/favorites' }
           ].map((item) => (
             <Link 
               key={item.name}

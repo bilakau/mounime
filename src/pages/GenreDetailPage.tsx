@@ -4,31 +4,30 @@ import { Anime } from '../types';
 import Loader from '../components/Loader';
 import AnimeCard from '../components/AnimeCard';
 import Button from '../components/Button';
+import { ANIMEPLAY_API_BASE_URL } from '../constants';
+import { authenticatedFetch } from '../utils/api';
 
 const GenreDetailPage = () => {
   const { genreId } = useParams<{ genreId: string }>();
   const [animeList, setAnimeList] = useState<Anime[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const [hasNextPage, setHasNextPage] = useState(false);
+  const [hasNextPage, setHasNextPage] = useState(true);
   const navigate = useNavigate();
-
-  const cleanTitle = (title?: string) => title ? title.split(' Subtitle Indonesia')[0].trim() : 'Unknown Title';
-  const cleanSlug = (slug?: string) => slug ? slug.split('-episode-')[0] : 'unknown';
 
   const mapApiData = (data: any[]): Anime[] => {
     if (!Array.isArray(data)) return [];
     return data.map((item: any) => ({
-      id: item.animeId || cleanSlug(item.href?.split('/').pop()),
+      id: item.id,
       title: item.title,
-      thumbnail: item.poster || '',
-      banner: item.poster || '',
-      episode: item.episodes ? `EP ${item.episodes}` : 'ONA',
-      status: item.season?.includes('Fall') || item.season?.includes('Summer') || item.season?.includes('Spring') || item.season?.includes('Winter') ? 'ONGOING' : 'COMPLETED',
-      year: item.season ? parseInt(item.season.split(' ').pop() || '2025') : 2025,
-      rating: (item.score && !isNaN(parseFloat(item.score))) ? parseFloat(item.score) : 0,
-      genre: item.genreList?.map((g: any) => g.title) || [],
-      synopsis: item.synopsis?.paragraphs?.[0] || 'No synopsis available.',
+      thumbnail: item.image_url || '',
+      banner: item.image_url || '',
+      episode: item.latest_episode ? `EP ${item.latest_episode}` : '??',
+      status: 'ONGOING', // Default
+      year: item.date_created ? new Date(item.date_created).getFullYear() : 2026,
+      rating: item.rating ? parseFloat(item.rating) : 0,
+      genre: [item.type || 'Anime'],
+      synopsis: item.broadcast ? `Broadcast: ${item.broadcast}` : `Added: ${item.date_created ? new Date(item.date_created).toLocaleDateString() : 'Recently'}`,
       likes: `${Math.floor(Math.random() * 50) + 1}K`
     }));
   };
@@ -38,12 +37,13 @@ const GenreDetailPage = () => {
       if (!genreId) return;
       try {
         setLoading(true);
-        const res = await fetch(`https://www.sankavollerei.com/anime/genre/${genreId}?page=${page}`);
+        const res = await authenticatedFetch(`${ANIMEPLAY_API_BASE_URL}/genre/${genreId}?page=${page}`);
         const json = await res.json();
         
-        if (json.status === 'success' && json.data) {
-          setAnimeList(mapApiData(json.data.animeList));
-          setHasNextPage(json.data.pagination?.hasNextPage || false);
+        if (json.status === 'success' && json.data?.data) {
+          const list = json.data.data;
+          setAnimeList(mapApiData(list));
+          setHasNextPage(list.length >= 20);
         }
       } catch (error) {
         console.error('Fetch Error:', error);

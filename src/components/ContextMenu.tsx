@@ -177,11 +177,10 @@ const ContextMenu = () => {
 
   const menuItems = [
     { name: 'Home', path: '/' },
+    { name: 'List', path: '/list' },
     { name: 'Ongoing', path: '/ongoing' },
     { name: 'Complete', path: '/complete' },
     { name: 'Genre', path: '/genre' },
-    { name: 'Schedule', path: '/schedule' },
-    { name: 'My List', path: '/favorites' },
   ];
 
   return (

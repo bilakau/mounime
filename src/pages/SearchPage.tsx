@@ -3,27 +3,27 @@ import { useParams } from 'react-router-dom';
 import { Anime } from '../types';
 import Loader from '../components/Loader';
 import AnimeCard from '../components/AnimeCard';
+import { ANIMEPLAY_API_BASE_URL } from '../constants';
+import { authenticatedFetch } from '../utils/api';
 
 const SearchPage = () => {
   const { query } = useParams<{ query: string }>();
   const [results, setResults] = useState<Anime[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const cleanTitle = (title?: string) => title ? title.split(' Subtitle Indonesia')[0].trim() : 'Unknown Title';
-
   const mapApiData = (data: any[]): Anime[] => {
     if (!Array.isArray(data)) return [];
     return data.map((item: any) => ({
-      id: item.animeId || item.slug || 'unknown',
-      title: cleanTitle(item.title),
-      thumbnail: item.poster || '',
-      banner: item.poster || '',
-      episode: item.episodes ? `EP ${item.episodes}` : (item.type === 'Movie' ? 'Movie' : 'ONA'),
-      status: item.status?.toLowerCase().includes('ongoing') ? 'ONGOING' : 'COMPLETED',
-      year: parseInt(item.year) || parseInt(item.date) || 2025,
-      rating: item.score ? parseFloat(item.score) : (8.0 + Math.random() * 1.5),
-      genre: item.genreList ? item.genreList.map((genre: any) => genre.title) : ['Action'],
-      synopsis: item.synopsis || `Release status: ${item.status || 'Active'}. Dive into the world of ${item.title} on Kanatanime V3.`,
+      id: item.id,
+      title: item.title,
+      thumbnail: item.image_url || '',
+      banner: item.image_url || '',
+      episode: item.latest_episode ? `EP ${item.latest_episode}` : '??',
+      status: 'ONGOING', // Default
+      year: item.date_created ? new Date(item.date_created).getFullYear() : 2025,
+      rating: item.rating ? parseFloat(item.rating) : 0,
+      genre: [item.type || 'Anime'],
+      synopsis: item.broadcast ? `Broadcast: ${item.broadcast}` : `Released: ${item.date_created ? new Date(item.date_created).toLocaleDateString() : 'Recently'}`,
       likes: `${Math.floor(Math.random() * 50) + 1}K`
     }));
   };
@@ -33,11 +33,11 @@ const SearchPage = () => {
       if (!query) return;
       try {
         setLoading(true);
-        const res = await fetch(`https://www.sankavollerei.com/anime/search/${query}`);
+        const res = await authenticatedFetch(`${ANIMEPLAY_API_BASE_URL}/search?q=${encodeURIComponent(query)}&page=1`);
         const json = await res.json();
 
-        if (json.status === 'success' && json.data && json.data.animeList) {
-          setResults(mapApiData(json.data.animeList));
+        if (json.status === 'success' && json.data?.data) {
+          setResults(mapApiData(json.data.data));
         }
       } catch (error) {
         console.error('Search Error:', error);

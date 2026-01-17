@@ -8,13 +8,14 @@ import Button from '../components/Button';
 import AnimeCard from '../components/AnimeCard';
 import { useFavorites } from '../hooks/useFavorites';
 
-const Home = ({ animes, movies, loading }: { animes: Anime[], movies: Anime[], loading: boolean }) => {
+const Home = ({ trending, movies, completed, loading }: { trending: Anime[], movies: Anime[], completed: Anime[], loading: boolean }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const { toggleFavorite, isFavorite } = useFavorites();
   
-  const ongoingList = animes.length > 0 ? animes : MOCK_ANIME;
-  const completedList = movies;
-  const featuredList = ongoingList.slice(0, 5); // Use top 5 for carousel
+  const trendingList = trending.length > 0 ? trending : MOCK_ANIME;
+  const movieList = movies;
+  const completedList = completed;
+  const featuredList = trendingList.slice(0, 5); // Use top 5 for carousel
 
   useEffect(() => {
     if (loading || featuredList.length <= 1) return;
@@ -147,28 +148,66 @@ const Home = ({ animes, movies, loading }: { animes: Anime[], movies: Anime[], l
         </div>
       </section>
 
-      {/* Ongoing Section */}
+      {/* Trending Section */}
       <section>
-        <div className="flex items-center gap-4 mb-8">
-          <div className="bg-[#FF3B30] text-white px-6 py-3 border-4 border-black transform -rotate-1 shadow-[8px_8px_0px_0px_black]">
-            <h2 className="text-4xl md:text-5xl font-black oswald italic uppercase">Ongoing Release</h2>
+        <div className="flex items-center justify-between gap-4 mb-8">
+          <div className="flex items-center gap-4">
+            <div className="bg-[#FF3B30] text-white px-6 py-3 border-4 border-black transform -rotate-1 shadow-[8px_8px_0px_0px_black]">
+              <h2 className="text-4xl md:text-5xl font-black oswald italic uppercase">Sedang Populer</h2>
+            </div>
+            <div className="hidden md:block flex-1 h-2 bg-black min-w-[50px]"></div>
           </div>
-          <div className="flex-1 h-2 bg-black"></div>
+          <Link to="/trending">
+            <button className="px-6 py-2 bg-[#FFCC00] text-black font-black oswald border-4 border-black shadow-[4px_4px_0px_0px_black] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all cursor-pointer uppercase text-sm md:text-lg">
+              See All →
+            </button>
+          </Link>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 md:gap-10">
-          {ongoingList.map(anime => (
+          {trendingList.map(anime => (
             <AnimeCard key={anime.id} anime={anime} />
           ))}
         </div>
       </section>
 
+      {/* Movies Section */}
+      {movieList.length > 0 && (
+        <section>
+          <div className="flex items-center justify-between gap-4 mb-8">
+            <div className="flex items-center gap-4">
+              <div className="bg-[#FFCC00] text-black px-6 py-3 border-4 border-black transform rotate-1 shadow-[8px_8px_0px_0px_black]">
+                <h2 className="text-4xl md:text-5xl font-black oswald italic uppercase">Film Layar Lebar</h2>
+              </div>
+              <div className="hidden md:block flex-1 h-2 bg-black min-w-[50px]"></div>
+            </div>
+            <Link to="/movies">
+              <button className="px-6 py-2 bg-black text-white font-black oswald border-4 border-black shadow-[4px_4px_0px_0px_black] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all cursor-pointer uppercase text-sm md:text-lg">
+                See All →
+              </button>
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 md:gap-10">
+            {movieList.map(anime => (
+              <AnimeCard key={anime.id} anime={anime} />
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Completed Section */}
       <section>
-        <div className="flex items-center gap-4 mb-8">
-          <div className="bg-[#007AFF] text-white px-6 py-3 border-4 border-black transform rotate-1 shadow-[8px_8px_0px_0px_black]">
-            <h2 className="text-4xl md:text-5xl font-black oswald italic uppercase">Completed Series</h2>
+        <div className="flex items-center justify-between gap-4 mb-8">
+          <div className="flex items-center gap-4">
+            <div className="bg-[#007AFF] text-white px-6 py-3 border-4 border-black transform rotate-1 shadow-[8px_8px_0px_0px_black]">
+              <h2 className="text-4xl md:text-5xl font-black oswald italic uppercase">Selesai Ditayangkan</h2>
+            </div>
+            <div className="hidden md:block flex-1 h-2 bg-black min-w-[50px]"></div>
           </div>
-          <div className="flex-1 h-2 bg-black"></div>
+          <Link to="/complete">
+            <button className="px-6 py-2 bg-[#4CD964] text-black font-black oswald border-4 border-black shadow-[4px_4px_0px_0px_black] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all cursor-pointer uppercase text-sm md:text-lg">
+              See All →
+            </button>
+          </Link>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 md:gap-10">
           {completedList.map(anime => (

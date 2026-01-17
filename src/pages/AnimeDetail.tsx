@@ -5,6 +5,8 @@ import Loader from '../components/Loader';
 import Button from '../components/Button';
 import Badge from '../components/Badge';
 import { useFavorites } from '../hooks/useFavorites';
+import { ANIMEPLAY_API_BASE_URL } from '../constants';
+import { authenticatedFetch } from '../utils/api';
 
 const AnimeDetail = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -19,53 +21,44 @@ const AnimeDetail = () => {
       if (!slug) return;
       setLoading(true);
       try {
-        const res = await fetch(`https://www.sankavollerei.com/anime/anime/${slug}`);
+        const res = await authenticatedFetch(`${ANIMEPLAY_API_BASE_URL}/detail/${slug}`);
         const json = await res.json();
         
-        if (json.status === 'success' && json.data) {
-          const d = json.data;
+        if (json.status === 'success' && json.data?.data) {
+          const d = json.data.data;
           const detailed: DetailedAnime = {
-            id: slug,
+            id: d.id,
             title: d.title,
-            thumbnail: d.poster,
-            banner: d.poster,
-            episode: d.episodes?.toString() || '?',
-            status: d.status?.toUpperCase() === 'COMPLETED' ? 'COMPLETED' : 'ONGOING',
-            year: d.aired ? parseInt(d.aired.split(' ').pop() || '2025') : 2025,
-            rating: d.score ? parseFloat(d.score) : 0,
-            genre: d.genreList?.map((g: any) => g.title) || [],
-            synopsis: d.synopsis?.paragraphs?.length > 0 ? d.synopsis.paragraphs.join('\n\n') : 'No synopsis available.',
+            thumbnail: d.image_url,
+            banner: d.image_url,
+            episode: d.latest_episode?.toString() || '?',
+            status: d.season_status?.toUpperCase() === 'COMPLETED' ? 'COMPLETED' : 'ONGOING',
+            year: d.release_date ? new Date(d.release_date).getFullYear() : 2026,
+            rating: d.rating ? parseFloat(d.rating) : 0,
+            genre: d.genres?.map((g: any) => g.genre.name) || [],
+            synopsis: d.synopsis || 'No synopsis available.',
             info: {
-              japanese: d.japanese,
+              japanese: d.title_japanese,
               tipe: d.type,
-              jumlah_episode: d.episodes,
-              studio: d.studios,
-              score: d.score,
-              producers: d.producers,
+              jumlah_episode: d.total_episode,
+              studio: d.studio?.name || 'N/A',
+              score: d.rating,
+              producers: 'N/A',
               duration: d.duration,
-              aired: d.aired,
+              aired: d.release_date ? new Date(d.release_date).toLocaleDateString() : 'N/A',
             },
-            episodes: d.episodeList?.map((ep: any) => ({
-              title: ep.title,
-              episode: ep.eps?.toString(),
-              date: ep.date,
-              slug: ep.episodeId
+            episodes: d.episodes?.map((ep: any) => ({
+              title: ep.title_indonesian || `Episode ${ep.number}`,
+              episode: ep.number?.toString(),
+              date: ep.date_created ? new Date(ep.date_created).toLocaleDateString() : 'Recently',
+              slug: ep.id
             })) || [],
-            recommended: d.recommendedAnimeList || [],
-            batch: d.batch
+            recommended: d.recommendations?.map((r: any) => ({
+                animeId: r.id,
+                title: r.title,
+                poster: r.image_url
+            })) || [],
           };
-
-          if (d.batch?.batchId) {
-            try {
-              const batchRes = await fetch(`https://www.sankavollerei.com/anime/batch/${d.batch.batchId}`);
-              const batchJson = await batchRes.json();
-              if (batchJson.status === 'success') {
-                detailed.batchData = batchJson.data;
-              }
-            } catch (batchErr) {
-              console.error('Batch Fetch Error:', batchErr);
-            }
-          }
 
           setAnime(detailed);
         } else {
@@ -141,7 +134,7 @@ const AnimeDetail = () => {
             <div className="pt-4 border-t-4 border-black">
               <p className="font-black oswald mb-2">Genres</p>
               <div className="flex flex-wrap gap-2">
-                {anime.genre?.map((g: any) => <Badge color="yellow">{g}</Badge>)}
+                {anime.genre?.map((g: any, idx: number) => <Badge key={idx} color="yellow">{g}</Badge>)}
               </div>
             </div>
           </div>

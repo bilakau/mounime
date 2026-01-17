@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Genre } from '../types';
 import Loader from '../components/Loader';
+import { ANIMEPLAY_API_BASE_URL } from '../constants';
+import { authenticatedFetch } from '../utils/api';
 
 const GenrePage = () => {
   const [genres, setGenres] = useState<Genre[]>([]);
@@ -11,10 +13,14 @@ const GenrePage = () => {
   useEffect(() => {
     const fetchGenres = async () => {
       try {
-        const res = await fetch('https://www.sankavollerei.com/anime/genre');
+        const res = await authenticatedFetch(`${ANIMEPLAY_API_BASE_URL}/listgenre`);
         const json = await res.json();
-        if (json.status === 'success' && json.data?.genreList) {
-          setGenres(json.data.genreList);
+        if (json.status === 'success' && Array.isArray(json.data)) {
+          const mappedGenres = json.data.map((g: any) => ({
+            genreId: g.id,
+            title: g.name
+          }));
+          setGenres(mappedGenres);
         }
       } catch (err) {
         console.error('Genre Fetch Error:', err);
