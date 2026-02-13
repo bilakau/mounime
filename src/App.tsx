@@ -20,7 +20,7 @@ import GenrePage from './pages/GenrePage';
 import GenreDetailPage from './pages/GenreDetailPage';
 import NotFoundPage from './pages/NotFoundPage';
 import SocialMediaPopup from './components/SocialMediaPopup';
-// import ContextMenu from './components/ContextMenu';
+import ContextMenu from './components/ContextMenu';
 import FavoritesPage from './pages/FavoritesPage';
 import AuthorPage from './pages/AuthorPage';
 import { API_BASE_URL, ANIMEPLAY_API_BASE_URL } from './constants';
@@ -82,7 +82,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-transparent text-white selection:bg-[#FFCC00] selection:text-black overflow-x-hidden">
       <SocialMediaPopup />
-      {/* <ContextMenu /> */}
+      <ContextMenu />
       <Navbar />
       <main className="pt-28 pb-24 md:pb-20 lg:pb-20">
         <Routes>
